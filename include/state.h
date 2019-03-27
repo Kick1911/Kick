@@ -6,9 +6,11 @@
 #define ANY (0b11)
 
 typedef struct state{
+	void* data;
 	unsigned char opt;
 	struct state* aux;
 	unsigned int V;
+	unsigned int offset;
 	struct state** states;
 }state_t;
 
@@ -24,10 +26,11 @@ void act(State s, unsigned int in, State next, unsigned char opt){
 	}
 }
 
-void alloc_state(State* s, size_t size){
+void alloc_state(State* s, size_t V, unsigned int offset){
 	*s = malloc(sizeof(state_t));
-	(*s)->V = size;
-	(*s)->states = calloc(sizeof(State), size);	
+	(*s)->V = V;
+	(*s)->offset = offset;
+	(*s)->states = calloc(sizeof(State), V);	
 }
 
 void free_state(State s){

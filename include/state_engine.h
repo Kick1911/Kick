@@ -4,7 +4,6 @@
 
 struct sengine{
 	int** mem_stacks;
-	State* path_stack;
 	State start;
 };
 
