@@ -7,16 +7,16 @@
 #include <state.h>
 #include <stdio.h>
 
-r_stack* rs;
+r_stack rs;
 
 char hit(State s, char n){
 	return s->V > n && n >= 0 && s->states[n];
 }
 
 State resolve(seng engine, char* str){
-	push(rs, engine->start);
-	while( rs->capacity ){
-		State temp = pop(rs);
+	push(&rs, engine->start);
+	while( rs.capacity ){
+		State temp = pop(&rs);
 		if(temp){
 			*str -= temp->offset;
 			printf("%d\n", *str);
@@ -26,15 +26,15 @@ State resolve(seng engine, char* str){
 				break;
 				case OPTIONAL:
 					if(hit(temp, *str))
-						push(rs, temp->states[*str++]);
+						push(&rs, temp->states[*str++]);
 					else{
 						*str += temp->offset; /* reset offset */
-						push(rs, temp->aux);
+						push(&rs, temp->aux);
 					}
 				break;
 				default:
 					if(hit(temp, *str))
-						push(rs, temp->states[*str++]);
+						push(&rs, temp->states[*str++]);
 			}
 		}
 	}
@@ -45,19 +45,7 @@ State resolve(seng engine, char* str){
 int main(int argc, char** argv){
 	if(argc < 2) fprintf(stderr, "Usage: ex [string]\n"),exit(1);
 	int offset = 'a'-1;
-	init((void**)&rs, 0x80);
-	/* State s1;
-	State s2;
-	State s3;
-	State s4;
-	alloc_state(&s1, 4, offset);
-	alloc_state(&s2, 10, '0');
-	alloc_state(&s3, 4, offset);
-	alloc_state(&s4, 1, 0);
-	act(s1, 2, s2, 0);
-	act(s2, 9, s3, OPTIONAL);
-	act(s3, 3, s4, 0);
-	act(s4, 0, NULL, FINAL); */
+	init(&rs, 0x80);
 
 	char str[] = "runcommand";
 	int size = strlen(str);
@@ -88,7 +76,7 @@ int main(int argc, char** argv){
 	free_state(s4); */
 	i = 0;while(i < size + 1)
 		free_state(state_arr[i++]);
-	free_stack(rs);
+	free_stack(&rs);
 	free_seng(engine);
 	return 0;
 }

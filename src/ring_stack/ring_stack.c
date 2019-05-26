@@ -1,9 +1,7 @@
 #include <ring_stack.h>
 #include <malloc.h>
 
-void init(void** o, unsigned int size){
-	*o = malloc(sizeof(r_stack));
-	r_stack* rs = (r_stack*)*o;
+void init(r_stack* rs, unsigned int size){
 	rs->capacity = 0;
 	rs->size = size;
 	rs->stack = malloc(sizeof(item) * size);
@@ -12,9 +10,8 @@ void init(void** o, unsigned int size){
 	rs->end = rs->stack + rs->size - 1;
 }
 
-void free_stack(struct stack* s){
+void free_stack(r_stack* s){
 	free(s->stack);
-	free(s);
 }
 
 static void** next_tail(r_stack* rs){
@@ -25,8 +22,7 @@ static void** next_head(r_stack* rs){
 	return (rs->head+1 < rs->stack)? rs->end: rs->head+1;
 }
 
-char push(void* o, item e){
-	r_stack* rs = (r_stack*)o;
+char push(r_stack* rs, item e){
 	if(rs->capacity && rs->tail == rs->head) return 1;
 	*rs->tail = e;
 	rs->capacity++;
@@ -34,8 +30,7 @@ char push(void* o, item e){
 	return 0;
 }
 
-item pop(void* o){
-	r_stack* rs = (r_stack*)o;
+item pop(r_stack* rs){
 	if(!rs->capacity && rs->head == rs->tail) return NULL;
 	item temp = *rs->head;
 	rs->capacity--;
@@ -52,20 +47,19 @@ int main(){
 	char c[] = "c";
 	char d[] = "d";
 	char e[] = "e";
-	r_stack* rs;
-	init((void**)&rs, 3);
-	push(rs, a);
-	push(rs, b);
-	push(rs, c);
-	push(rs, d);
-	push(rs, e);
-	i = 0;while( i < rs->size ) printf("`%s` ", rs->stack[i++]);
+	r_stack rs;
+	init(&rs, 3);
+	push(&rs, a);
+	push(&rs, b);
+	push(&rs, c);
+	push(&rs, d);
+	push(&rs, e);
+	i = 0;while( i < rs.size ) printf("`%s` ", rs.stack[i++]);
 	printf("\n");
-	char* res = (char*) pop(rs);
-	res = (char*) pop(rs);
+	char* res = (char*) pop(&rs);
+	res = (char*) pop(&rs);
 	printf("Second out %s\n", res);
-	free(rs->stack);
-	free(rs);
+	free_stack(&rs);
 	return 0;
 }
 #endif

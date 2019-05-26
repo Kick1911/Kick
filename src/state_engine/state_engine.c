@@ -1,4 +1,3 @@
-#ifndef SENG_C
 #define SENG_C
 #include <stdlib.h>
 #include <state_engine.h>
@@ -6,7 +5,7 @@
 #include <state.h>
 #include <stdio.h>
 
-r_stack* rs;
+r_stack rs;
 
 char hit(State s, char n){
 	if(s->V > n && n >= 0 && s->states[n] )
@@ -15,27 +14,29 @@ char hit(State s, char n){
 }
 
 State resolve(seng engine, char* str){
-	push(rs, engine->start);
-	while( rs->capacity ){
-		State temp = pop(rs);
+	char s;
+	push(&rs, engine->start);
+	while( rs.capacity ){
+		State temp = pop(&rs);
 		if(temp){
-			*str -= temp->offset;
-			printf("%d\n", *str);
+			s = *str - temp->offset;
+			printf("%d\n", s);
 			switch(temp->opt){
 				case FINAL:
-					return temp;
+					return (!s)? temp : NULL;
 				break;
 				case OPTIONAL:
-					if(hit(temp, *str))
-						push(rs, temp->states[*str++]);
-					else{
-						*str += temp->offset; /* reset offset */
-						push(rs, temp->aux);
-					}
+					if(hit(temp, s)){
+						push(&rs, temp->states[s]);
+						str++;
+					}else
+						push(&rs, temp->aux);
 				break;
 				default:
-					if(hit(temp, *str))
-						push(rs, temp->states[*str++]);
+					if(hit(temp, s)){
+						push(&rs, temp->states[s]);
+						str++;
+					}
 			}
 		}
 	}
@@ -46,7 +47,7 @@ State resolve(seng engine, char* str){
 int main(int argc, char** argv){
 	if(argc < 2) fprintf(stderr, "Usage: ex [string]\n"),exit(1);
 	int offset = 'a'-1;
-	init((void**)&rs, 0x80);
+	init(&rs, 0x80);
 	State s1;
 	State s2;
 	State s3;
@@ -55,8 +56,13 @@ int main(int argc, char** argv){
 	alloc_state(&s2, 10, '0');
 	alloc_state(&s3, 4, offset);
 	alloc_state(&s4, 1, 0);
-	act(s1, 2, s2, 0);
+
+	act(s1, 2, s1, 0);
+	act(s1, 2, s2, OPTIONAL);
+
+	act(s2, 9, s3, 0);
 	act(s2, 9, s3, OPTIONAL);
+
 	act(s3, 3, s4, 0);
 	act(s4, 0, NULL, FINAL);
 
@@ -73,9 +79,8 @@ int main(int argc, char** argv){
 	free_state(s2);
 	free_state(s3);
 	free_state(s4);
-	free_stack(rs);
+	free_stack(&rs);
 	free_seng(engine);
 	return 0;
 }
-#endif
 #endif

@@ -18,10 +18,11 @@ typedef struct state* State;
 
 void act(State s, unsigned int in, State next, unsigned char opt){
 	switch(opt){
+		case 0:
+			s->states[in] = next;
 		case OPTIONAL:
 			s->aux = next;
 		default:
-			s->states[in] = next;
 			s->opt = opt;
 	}
 }
